@@ -1,5 +1,3 @@
-"""Точка входа консольного приложения (Спринт 1 — меню и показ оборудования)."""
-
 from inventory import format_item
 from storage import load_items
 
@@ -15,7 +13,6 @@ MENU = """
 
 
 def show_items():
-    """Печатает список всего оборудования из демонстрационных данных."""
     items = load_items()
     if not items:
         print("Записей пока нет.")
