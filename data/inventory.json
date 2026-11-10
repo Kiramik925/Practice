@@ -52,5 +52,23 @@
     "status": "исправно",
     "date_added": "2024-01-18",
     "responsible": "Сидоров С.С."
+  },
+  {
+    "inv_number": "INV-0007",
+    "type": "ПК",
+    "name": "Системный блок MSI PRO DP180 14A-622XRU",
+    "room": "321",
+    "status": "исправно",
+    "date_added": "10.11.2026",
+    "responsible": "Карпов И.И."
+  },
+  {
+    "inv_number": "INV-0008",
+    "type": "Принтер",
+    "name": "Принтер CANON",
+    "room": "112",
+    "status": "исправно",
+    "date_added": "12.03.2026",
+    "responsible": "Кургачёв Е.К."
   }
 ]
