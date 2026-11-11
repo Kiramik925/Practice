@@ -1,29 +1,97 @@
-"""Автотесты Спринта 1 (первые 3 тест-кейса)."""
-
-from inventory import format_item
+from inventory import (
+    format_item,
+    next_number,
+    add_item,
+    find_by_number,
+    find_by_room,
+    update_item,
+    delete_item,
+)
 from storage import load_items
 
 
-def test_format_item():
-    """T-01: запись форматируется в строку с номером и кабинетом."""
-    item = {
-        "inv_number": "INV-0001",
+def make_item(number="INV-0001", room="204", status="исправно"):
+    return {
+        "inv_number": number,
         "type": "ПК",
-        "name": "Компьютер",
-        "room": "204",
-        "status": "исправно",
+        "name": "ПК",
+        "room": room,
+        "status": status,
     }
-    text = format_item(item)
+
+
+def test_demo_data():
+    assert len(load_items()) >= 5
+
+
+def test_add_ok():
+    items = []
+    assert add_item(items, make_item()) is None
+    assert len(items) == 1
+
+
+def test_add_empty():
+    items = []
+    data = {"inv_number": "", "type": "", "name": "",
+            "room": "", "status": ""}
+    assert add_item(items, data) is not None
+    assert len(items) == 0
+
+
+def test_add_duplicate():
+    items = [make_item()]
+    assert add_item(items, make_item()) is not None
+    assert len(items) == 1
+
+
+def test_next_number():
+    assert next_number([{"inv_number": "INV-0003"}]) == "INV-0004"
+
+
+def test_format():
+    text = format_item(make_item())
     assert "INV-0001" in text
     assert "каб. 204" in text
 
 
-def test_demo_data_has_at_least_five_records():
-    """T-02: демонстрационные данные содержат не менее 5 записей."""
-    assert len(load_items()) >= 5
+def test_find_by_number_ok():
+    items = [make_item("INV-0001"), make_item("INV-0002")]
+    assert find_by_number(items, "INV-0002")["inv_number"] == "INV-0002"
 
 
-def test_demo_inv_numbers_are_unique():
-    """T-03: инвентарные номера в демо-данных уникальны."""
-    numbers = [r["inv_number"] for r in load_items()]
-    assert len(numbers) == len(set(numbers))
+def test_find_by_number_missing():
+    assert find_by_number([make_item()], "INV-9999") is None
+
+
+def test_find_by_room():
+    items = [make_item("INV-0001", room="204"),
+             make_item("INV-0002", room="205"),
+             make_item("INV-0003", room="204")]
+    assert len(find_by_room(items, "204")) == 2
+    assert find_by_room(items, "999") == []
+
+
+def test_update_ok():
+    items = [make_item()]
+    assert update_item(items, "INV-0001", room="301", status="списано") is None
+    assert items[0]["room"] == "301"
+    assert items[0]["status"] == "списано"
+
+
+def test_update_missing():
+    assert update_item([], "INV-9999", room="301") == "Запись не найдена."
+
+
+def test_update_bad_status():
+    items = [make_item()]
+    assert update_item(items, "INV-0001", status="сломано") is not None
+
+
+def test_delete_ok():
+    items = [make_item()]
+    assert delete_item(items, "INV-0001") is None
+    assert items == []
+
+
+def test_delete_missing():
+    assert delete_item([], "INV-9999") == "Запись не найдена."
