@@ -70,5 +70,14 @@
     "status": "исправно",
     "date_added": "12.03.2026",
     "responsible": "Кургачёв Е.К."
+  },
+  {
+    "inv_number": "INV-0009",
+    "type": "Монитор",
+    "name": "Монитор Dell",
+    "room": "408",
+    "status": "исправно",
+    "date_added": "12.08.2026",
+    "responsible": ""
   }
 ]

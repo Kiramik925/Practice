@@ -89,7 +89,7 @@ def add_new_item():
 def search_item():
     items = load()
     print("\nПоиск: 1 — по номеру, 2 — по кабинету")
-    mode = ask("Выбор: ")
+    mode = ask("Поиск: ")
 
     if mode == "1":
         number = ask("Номер: ")
