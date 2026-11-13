@@ -1,8 +1,14 @@
 STATUSES = ("исправно", "требует ремонта", "списано")
 TYPES = ("ПК", "Монитор", "Принтер", "Ноутбук", "Сканер", "Прочее")
+FIELDS = ("inv_number", "type", "name", "room", "status", "date_added", "responsible")
+
+
+def normalize_item(item):
+    return {field: str(item.get(field) or "").strip() for field in FIELDS}
 
 
 def format_item(item):
+    item = normalize_item(item)
     return (
         f"{item['inv_number']} | {item['type']} | {item['name']} | "
         f"каб. {item['room']} | {item['status']}"
@@ -12,7 +18,7 @@ def format_item(item):
 def next_number(items):
     max_num = 0
     for item in items:
-        number = item.get("inv_number", "")
+        number = normalize_item(item)["inv_number"]
         if number.startswith("INV-"):
             try:
                 max_num = max(max_num, int(number.split("-")[1]))
@@ -65,8 +71,6 @@ def add_item(items, data):
     items.append(data)
     return None
 
-
-# --- Функции для Спринта 3 ---
 
 def find_by_number(items, number):
     for item in items:

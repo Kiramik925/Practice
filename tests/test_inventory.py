@@ -1,6 +1,7 @@
 from inventory import (
     format_item,
     next_number,
+    normalize_item,
     add_item,
     find_by_number,
     find_by_room,
@@ -95,3 +96,17 @@ def test_delete_ok():
 
 def test_delete_missing():
     assert delete_item([], "INV-9999") == "Запись не найдена."
+
+
+def test_normalize_fills_missing_fields():
+    item = normalize_item({"inv_number": " INV-0001 "})
+    assert item["inv_number"] == "INV-0001"
+    assert item["room"] == ""
+    assert set(item) == {"inv_number", "type", "name", "room",
+                         "status", "date_added", "responsible"}
+
+
+def test_format_handles_incomplete_item():
+    text = format_item({"inv_number": "INV-0009"})
+    assert "INV-0009" in text
+    assert "каб." in text

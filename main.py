@@ -7,7 +7,7 @@ from inventory import (
     update_item,
     delete_item,
 )
-from storage import load_items, save_items
+from storage import load_items, save_items, last_message
 
 MENU = """
 === Учёт инвентаря ===
@@ -20,8 +20,16 @@ MENU = """
 """
 
 
-def show_items():
+def load():
     items = load_items()
+    problem = last_message()
+    if problem:
+        print("\n" + problem)
+    return items
+
+
+def show_items():
+    items = load()
     if not items:
         print("Записей нет.")
         return
@@ -32,7 +40,7 @@ def show_items():
 
 
 def add_new_item():
-    items = load_items()
+    items = load()
 
     inv_number = input(f"Номер [{next_number(items)}]: ").strip() or next_number(items)
     data = {
@@ -55,7 +63,7 @@ def add_new_item():
 
 
 def search_item():
-    items = load_items()
+    items = load()
     print("\nПоиск: 1 — по номеру, 2 — по кабинету")
     mode = input("Выбор: ").strip()
 
@@ -82,7 +90,7 @@ def search_item():
 
 
 def edit_item():
-    items = load_items()
+    items = load()
     number = input("Номер записи: ").strip()
     if find_by_number(items, number) is None:
         print("Запись не найдена.")
@@ -101,7 +109,7 @@ def edit_item():
 
 
 def remove_item():
-    items = load_items()
+    items = load()
     number = input("Номер записи для удаления: ").strip()
     if find_by_number(items, number) is None:
         print("Запись не найдена.")
