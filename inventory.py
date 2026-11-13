@@ -18,80 +18,114 @@ def format_item(item):
 def next_number(items):
     max_num = 0
     for item in items:
-        number = normalize_item(item)["inv_number"]
-        if number.startswith("INV-"):
-            try:
-                max_num = max(max_num, int(number.split("-")[1]))
-            except ValueError:
-                pass
+        number = normalize_item(item)["inv_number"].upper()
+        if number.startswith("INV-") and number[4:].isdigit():
+            max_num = max(max_num, int(number[4:]))
     return f"INV-{max_num + 1:04d}"
 
 
-def check_item(data, items):
-    inv_number = data["inv_number"].strip()
-    item_type = data["type"].strip()
-    name = data["name"].strip()
-    room = data["room"].strip()
-    status = data["status"].strip()
-
-    if not inv_number:
+def validate_number(number):
+    if not number:
         return "Поле «номер» пустое."
-    if not inv_number.startswith("INV-") or not inv_number[4:].isdigit():
+    if not number.upper().startswith("INV-") or not number[4:].isdigit():
         return "Номер должен быть в формате INV-0001 (буквы INV-, затем цифры)."
+    return None
 
+
+def validate_type(item_type):
     if not item_type:
         return "Поле «тип» пустое."
     if item_type not in TYPES:
         return f"Тип должен быть одним из: {', '.join(TYPES)}."
+    return None
 
+
+def validate_name(name):
     if not name:
         return "Поле «наименование» пустое."
-    if not any(c.isalpha() for c in name):
+    if not any(letter.isalpha() for letter in name):
         return "Наименование должно содержать хотя бы одну букву."
+    return None
 
+
+def validate_room(room):
     if not room:
         return "Поле «кабинет» пустое."
     if not room.isdigit():
         return "Кабинет должен состоять только из цифр."
+    return None
 
+
+def validate_status(status):
     if status not in STATUSES:
         return "Состояние: исправно / требует ремонта / списано."
+    return None
 
-    for item in items:
-        if item["inv_number"] == inv_number:
-            return f"Номер {inv_number} уже есть."
 
+def validate_item(data, items):
+    clean = normalize_item(data)
+    checks = (
+        (validate_number, clean["inv_number"]),
+        (validate_type, clean["type"]),
+        (validate_name, clean["name"]),
+        (validate_room, clean["room"]),
+        (validate_status, clean["status"]),
+    )
+    for check, value in checks:
+        error = check(value)
+        if error:
+            return error
+    if find_by_number(items, clean["inv_number"]):
+        return f"Номер {clean['inv_number'].upper()} уже есть."
     return None
 
 
 def add_item(items, data):
-    error = check_item(data, items)
+    error = validate_item(data, items)
     if error:
         return error
-    items.append(data)
+    clean = normalize_item(data)
+    clean["inv_number"] = clean["inv_number"].upper()
+    items.append(clean)
     return None
 
 
 def find_by_number(items, number):
+    wanted = normalize_item({"inv_number": number})["inv_number"].upper()
+    if not wanted:
+        return None
     for item in items:
-        if item["inv_number"] == number:
+        if normalize_item(item)["inv_number"].upper() == wanted:
             return item
     return None
 
 
-def find_by_room(items, room):
-    return [item for item in items if item["room"] == room]
+def filter_items(items, room=None, status=None):
+    room = (room or "").strip()
+    result = []
+    for item in items:
+        clean = normalize_item(item)
+        if room and clean["room"] != room:
+            continue
+        if status and clean["status"] != status:
+            continue
+        result.append(item)
+    return result
 
 
 def update_item(items, number, room=None, status=None):
     item = find_by_number(items, number)
     if item is None:
         return "Запись не найдена."
-    if status is not None and status not in STATUSES:
-        return "Состояние: исправно / требует ремонта / списано."
     if room:
-        if not room.isdigit():
-            return "Кабинет должен состоять только из цифр."
+        error = validate_room(room)
+        if error:
+            return error
+    if status:
+        error = validate_status(status)
+        if error:
+            return error
+    if room:
         item["room"] = room
     if status:
         item["status"] = status

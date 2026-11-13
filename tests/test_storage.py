@@ -96,3 +96,33 @@ def test_save_overwrites_previous_content(data_dir):
     save_items([make_item("INV-0003")], path)
     loaded = load_items(path)
     assert [item["inv_number"] for item in loaded] == ["INV-0003"]
+
+
+def test_save_returns_none_on_success(data_dir):
+    assert save_items([make_item()], data_dir / "inventory.json") is None
+
+
+def test_save_reports_unwritable_path(data_dir):
+    blocker = data_dir / "blocker"
+    blocker.write_text("не папка", encoding="utf-8")
+    error = save_items([make_item()], blocker / "inventory.json")
+    assert error is not None
+    assert "Не удалось сохранить" in error
+
+
+def test_backup_keeps_original_content(data_dir):
+    path = data_dir / "inventory.json"
+    broken = '{"inv_number": "INV-0001",'
+    path.write_text(broken, encoding="utf-8")
+    load_items(path)
+    backup = next(data_dir.glob("inventory.json.corrupt-*"))
+    assert backup.read_text(encoding="utf-8") == broken
+
+
+def test_work_continues_after_corrupt_file(data_dir):
+    path = data_dir / "inventory.json"
+    path.write_text("не json", encoding="utf-8")
+    assert load_items(path) == []
+    save_items([make_item("INV-0100")], path)
+    loaded = load_items(path)
+    assert [item["inv_number"] for item in loaded] == ["INV-0100"]

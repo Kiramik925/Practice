@@ -66,11 +66,15 @@ def load_items(path=None):
 
 def save_items(items, path=None):
     file = _target(path)
-    file.parent.mkdir(parents=True, exist_ok=True)
-    temp = file.with_name(file.name + ".tmp")
     text = json.dumps([normalize_item(item) for item in items], ensure_ascii=False, indent=2)
-    temp.write_text(text, encoding="utf-8")
-    temp.replace(file)
+    temp = file.with_name(file.name + ".tmp")
+    try:
+        file.parent.mkdir(parents=True, exist_ok=True)
+        temp.write_text(text, encoding="utf-8")
+        temp.replace(file)
+    except OSError:
+        return f"Не удалось сохранить данные в {file.name}."
+    return None
 
 
 def _corrupt_message(file, backup):
